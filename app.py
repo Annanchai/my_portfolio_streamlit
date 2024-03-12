@@ -4,6 +4,7 @@ import io
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from wordcloud import WordCloud
 
 st.set_page_config(layout='wide')
 
@@ -14,6 +15,7 @@ st.markdown('''
             )
 #Data
 dfnf = pd.read_csv('./data/netflix.csv')
+dfjb = pd.read_csv('./data/jamboree.csv')
 #functions
 
 
@@ -37,8 +39,9 @@ intro = st.sidebar.selectbox(
 st.sidebar.markdown('''<p class='fw-bold'>My Projects</p>''', unsafe_allow_html=True)
 project = st.sidebar.selectbox(
     'Select an option to view the project',
-    ('Netflix: Data Exploration and visualization', 'Aerofit: Descriptive stats and probablity', 'Walmart: Confidence interval and CLT', 'YULU: Hypothesis testing', 'Jamboree education: Linear Regression', 'LoanTap: Logistic Regression' ), label_visibility='collapsed'
+    ('Netflix: Data Exploration and visualization',  'Jamboree education: Linear Regression', ), label_visibility='collapsed'
 )
+# 'Aerofit: Descriptive stats and probablity', 'Walmart: Confidence interval and CLT', 'YULU: Hypothesis testing','LoanTap: Logistic Regression' 
 
 
 #Tabs Section
@@ -178,6 +181,7 @@ with tab1:
         
 
 with tab2:
+#Netflix Project
     if project == 'Netflix: Data Exploration and visualization':
         st.markdown('''
                     <div>
@@ -205,22 +209,27 @@ with tab2:
 
         #Unnesting
         st.write('### Unnesting')
-        st.code('''df['cast'] = df['cast'].str.split(',')
-df['listed_in'] = df['listed_in'].str.split(',')
-df['director'] = df['director'].str.split(',')''')
-        st.code('''df = df.explode('cast', ignore_index = True)
-df = df.explode('listed_in', ignore_index = True)
-df = df.explode('director', ignore_index = True)''')
+        st.code('''
+                df['cast'] = df['cast'].str.split(',')
+                df['listed_in'] = df['listed_in'].str.split(',')
+                df['director'] = df['director'].str.split(',')
+                ''')
+        st.code('''
+                df = df.explode('cast', ignore_index = True)
+                df = df.explode('listed_in', ignore_index = True)
+                df = df.explode('director', ignore_index = True)
+                ''')
         dfnf['cast'] = dfnf['cast'].str.split(',')
         dfnf['listed_in'] = dfnf['listed_in'].str.split(',')
         dfnf['director'] = dfnf['director'].str.split(',')
         st.code('df.head(10)')
         st.dataframe(dfnf.head(10))
         st.write('### Handling null values')
-        st.code('''values = {'director': 'unknown_director', 'cast': 'unknown_cast', 'country': 'unknown_country', 'date_added': 'unknown_date_added', 'rating': 'unknown_rating', 'duration': 0}
-df.fillna(value = values, inplace = True)
-df.head(10)
-''')
+        st.code('''
+                values = {'director': 'unknown_director', 'cast': 'unknown_cast', 'country': 'unknown_country', 'date_added': 'unknown_date_added', 'rating': 'unknown_rating', 'duration': 0}
+                df.fillna(value = values, inplace = True)
+                df.head(10)
+                ''')
         # Shows error on Streamlit
         # values = {'director': 'unknown_director', 'cast': 'unknown_cast', 'country': 'unknown_country', 'date_added': 'unknown_date_added', 'rating': 'unknown_rating', 'duration': 0}
         # dfnf.fillna(value=values, inplace=True)
@@ -230,15 +239,21 @@ df.head(10)
         st.write('### Graphical and non-graphical analysis of categorical values')
         st.write('##### a. Non-graphical Analysis')
         st.code('''df['type'].value_counts()''')
-        st.dataframe(dfnf['type'].value_counts())
+        st.text('''
+                Movie      111989
+                TV Show     49227
+                Name: type, dtype: int64
+                ''')
         st.write('##### b. Graphical Analysis')
-        st.code('''plt.figure(figsize=(10,5))
-sns.countplot(x=df['type'])
-plt.xticks(rotation=45)
-ax=sns.countplot(data=df, x="type")
-ax.bar_label(ax.containers[0])
-ax.set(xlabel = 'Type', ylabel = 'Count')
-plt.show()''')
+        st.code('''
+                plt.figure(figsize=(10,5))
+                sns.countplot(x=df['type'])
+                plt.xticks(rotation=45)
+                ax=sns.countplot(data=df, x="type")
+                ax.bar_label(ax.containers[0])
+                ax.set(xlabel = 'Type', ylabel = 'Count')
+                plt.show()
+                ''')
         plt.figure(figsize=(10,5))
         sns.countplot(x=dfnf['type'])
         plt.xticks(rotation=45)
@@ -259,15 +274,43 @@ plt.show()''')
         #Question2
         st.write('### Comparison of tv shows vs. movies.')
         st.write('##### a. Top 10 countries with most movies produced')
-        st.code('''movies = df[(df['type'] == 'Movie') & (df['country'] != 'unknown_country')]
-                movies.groupby('country')['title'].nunique().sort_values(ascending = False).head(10)''')
-        movies = dfnf[(dfnf['type'] == 'Movie') & (dfnf['country'] != 'unknown_country')]
-        moviesdf = movies.groupby('country')['title'].nunique().sort_values(ascending = False).head(10)
-        st.dataframe(moviesdf)
+        st.code('''
+                movies = df[(df['type'] == 'Movie') & (df['country'] != 'unknown_country')]
+                movies.groupby('country')['title'].nunique().sort_values(ascending = False).head(10)
+                ''')
+        st.text('''
+                country
+                United States     2058
+                India              893
+                United Kingdom     206
+                Canada             122
+                Spain               97
+                Egypt               92
+                Nigeria             86
+                Indonesia           77
+                Turkey              76
+                Japan               76
+                Name: title, dtype: int64
+                ''')
         st.write('##### b. Top 10 countries with most TV Shows produced')
-        tvShows = dfnf.loc[(dfnf['type'] == 'TV Show') & (dfnf['country'] != 'unknown_country')]
-        tvShowsdf = tvShows.groupby('country')['title'].nunique().sort_values(ascending = False).head(10)
-        st.dataframe(tvShowsdf)
+        st.code('''
+                tvShows = dfnf.loc[(dfnf['type'] == 'TV Show') & (dfnf['country'] != 'unknown_country')]
+                tvShowsdf = tvShows.groupby('country')['title'].nunique().sort_values(ascending = False).head(10)
+                ''')
+        st.text('''
+                country
+                United States     760
+                United Kingdom    213
+                Japan             169
+                South Korea       158
+                India              79
+                Taiwan             68
+                Canada             59
+                France             49
+                Australia          48
+                Spain              48
+                Name: title, dtype: int64
+                ''')
         st.markdown('''
                     <div>
                         <p class='h4'>Insights</p>
@@ -293,14 +336,30 @@ plt.show()''')
                 dd_movies.groupby('release_week')['title'].nunique().sort_values(ascending = False).head(5)
                 ''')
         dd_movies = date_data.loc[date_data['type'] == 'Movie']
-        st.dataframe(dd_movies.groupby('release_week')['title'].nunique().sort_values(ascending = False).head(5))
+        st.text('''
+                release_week
+                1     316
+                44    243
+                40    215
+                9     207
+                26    195
+                Name: title, dtype: int64
+                ''')
 
         st.write('##### b. Best week to release TV Shows')
         st.code('''
                 dd_tv_show = date_data.loc[date_data['type'] == 'TV Show']
                 dd_tv_show.groupby('release_week')['title'].nunique().sort_values(ascending = False).head(5)''')
         dd_tv_show = date_data.loc[date_data['type'] == 'TV Show']
-        st.dataframe(dd_tv_show.groupby('release_week')['title'].nunique().sort_values(ascending = False).head(5))
+        st.text('''
+                release_week
+                27    86
+                31    83
+                13    76
+                44    75
+                24    75
+                Name: title, dtype: int64
+                ''')
 
         st.write('##### Add release month column')
         st.code('''date_data['release_month'] = pd.to_datetime(date_data['date_added']).apply(lambda x: x.  month)''')
@@ -312,14 +371,44 @@ plt.show()''')
                 dd_movies.groupby('release_month')['title'].nunique().sort_values(ascending = False)
                 ''')
         dd_movies = date_data.loc[date_data['type'] == 'Movie']
-        st.dataframe(dd_movies.groupby('release_month')['title'].nunique().sort_values(ascending = False))
+        st.code('''
+                release_month
+                7     565
+                4     550
+                12    547
+                1     546
+                10    545
+                3     529
+                8     519
+                9     519
+                11    498
+                6     492
+                5     439
+                2     382
+                Name: title, dtype: int64
+                ''')
         st.write('##### d. Best month to release TV Shows')
         st.code('''
                 dd_tvshows = date_data.loc[date_data['type'] == 'TV Show']
                 dd_tvshows.groupby('release_month')['title'].nunique().sort_values(ascending = False)
                 ''')
         dd_tvshows = date_data.loc[date_data['type'] == 'TV Show']
-        st.dataframe(dd_tvshows.groupby('release_month')['title'].nunique().sort_values(ascending = False))
+        st.text('''
+                release_month
+                12    266
+                7     262
+                9     251
+                6     236
+                8     236
+                10    215
+                4     214
+                3     213
+                11    207
+                5     193
+                1     192
+                2     181
+                Name: title, dtype: int64
+                ''')
         st.markdown('''
                     <div>
                         <p class='h4'>Insights</p>
@@ -336,24 +425,246 @@ plt.show()''')
                 actor = df.loc[df['cast'] != 'unknown_cast']
                 actor.groupby(by = ['cast'])['title'].nunique().sort_values(ascending = False).head(10)
                 ''')
-        st.dataframe(pd.DataFrame({'cast': ['Anupam Kher', 'Rupa Bhimani', 'Takahiro Sakurai', 'Julie Tejwani', 'Om Puri', 'Shah Rukh Khan', 'Rajesh Kava ', 'Boman Irani ', 'Andrea Libman', 'Yuki Kaji  '], 'title': [39, 31,30,28,27,26,26,25,25,25] }))
+        st.text('''
+                cast
+                Anupam Kher         39
+                Rupa Bhimani        31
+                Takahiro Sakurai    30
+                Julie Tejwani       28
+                Om Puri             27
+                Shah Rukh Khan       26
+                Rajesh Kava         26
+                Boman Irani         25
+                Andrea Libman       25
+                Yuki Kaji           25
+                Name: title, dtype: int64
+                ''')
         st.write('##### b. Top ten Directors in Movies or TV Shows')
         st.code('''
                 director = df.loc[df['director'] != 'unknown_director'][['director', 'title']]
                 director.groupby('director')['title'].nunique().sort_values(ascending = False).head(10)
                 ''')
-        director = dfnf.loc[dfnf['director'] != 'unknown_director'][['director', 'title']]
-        director.groupby('director')['title'].nunique().sort_values(ascending = False).head(10)
+        st.text('''
+                director
+                Rajiv Chilaka          22
+                Raúl Campos            18
+                Jan Suter             18
+                Suhas Kadav            16
+                Marcus Raboy           16
+                Jay Karas              15
+                Cathy Garcia-Molina    13
+                Jay Chapman            12
+                Martin Scorsese        12
+                Youssef Chahine        12
+                Name: title, dtype: int64
+                ''')
+        st.markdown('''
+                    <div>
+                        <p class='h4'>Insights</p>
+                        <ul>
+                            <li>Anupam Kher is the most appeared actor in the Movies/TV Shows.</li>
+                            <li>Rajiv Chilaka is the person who has directed the most number of Movies/TV Shows.</li>
+                        </ul>
+                    </div>
+                    ''', unsafe_allow_html=True)
+        #Question 5
+        st.write('### More popular or more produced genre of movies')
+        st.code('''
+                text = df.loc[df['type'] == 'Movie']['listed_in']
+                w = WordCloud()
+                stop_words = list(w.stopwords)
+                custom_stop_words = ['Movies', 'International']
+                stop_words = set(stop_words + custom_stop_words)
+                wordcloud = WordCloud(collocations = False, background_color = 'white', stopwords = stop_words).generate(' '.join(text.tolist()))
 
-    elif project == 'Aerofit: Descriptive stats and probablity':
-        st.write('Aerofit')
-    elif project == 'Walmart: Confidence interval and CLT':
-        st.write('Walmart project')
-    elif project == 'YULU: Hypothesis testing':
-        st.write('YULU Project')
+                plt.imshow(wordcloud)
+                plt.axis("off")
+                plt.show()''')
+        text = dfnf.loc[dfnf['type'] == 'Movie']['listed_in']
+        w = WordCloud()
+        stop_words = list(w.stopwords)
+        custom_stop_words = ['Movies', 'International']
+        stop_words = set(stop_words + custom_stop_words)
+        wordcloud = WordCloud(collocations = False, background_color = 'white', stopwords = stop_words).generate(' '.join(str(t) for t in text))
+
+        plt.imshow(wordcloud)
+        plt.axis("off")
+        st.set_option('deprecation.showPyplotGlobalUse', False)
+        st.pyplot()
+        st.markdown('''
+                    <div>
+                        <p class='h4'>Insights</p>
+                        <ul>
+                            <li>The Drama genre movies are most popular</li>
+                            <li>The genres Comedies, Action and Adventure are also popular as well.</li>
+                        </ul>
+                    </div>
+                    ''', unsafe_allow_html=True)
+        
+        #Question 6
+        st.write('### Time Gap Between Movie Release and Netflix Availability')
+        st.code('''
+                date_data['date_added_ts'] = pd.to_datetime(date_data['date_added'])
+                date_data['rel_add_diff'] = date_data['date_added_ts'] - pd.to_datetime(date_data['release_year'].apply(lambda x: '31-12-'+str(x)))
+                date_data['rel_add_diff'].mode()
+                ''')
+        date_data['date_added_ts'] = pd.to_datetime(date_data['date_added'], format='mixed')
+        date_data['rel_add_diff'] = date_data['date_added_ts'] - pd.to_datetime(date_data['release_year'].apply(lambda x: '31-12-'+str(x)))
+        st.text('''
+                0   182 days
+                Name: rel_add_diff, dtype: timedelta64[ns]
+                ''')
+        st.markdown('''
+                    <div>
+                        <p class='h4'>Insights</p>
+                        <ul>
+                            <li>A movie is added to the Netflix platform, 182 days after it has been reeased.</li>
+                        </ul>
+                    </div>
+                    ''', unsafe_allow_html=True)
+        st.markdown('''
+                    <div>
+                        <p class='h4'>Recommendations</p>
+                        <ol>
+                            <li>Focus on Movies: Given that movies dominate the Netflix platform 100% more than TV shows, Netflix should continue to prioritize acquiring and producing high-quality movies to cater to its audience preferences.</li>
+                            <li>Release Timing: For movies, the best week to release them is in July, and for TV shows, it's week number 27. Netflix should consider these optimal release timings to maximize viewership and engagement.</li>
+                            <li>Geographical Preferences: Understanding regional preferences is crucial. For instance, in India, where movies are highly popular, Netflix should continue to invest in acquiring Indian cinema. In Japan, where TV shows are more favored, Netflix should ensure a diverse selection of popular TV shows to cater to the audience.</li>
+                            <li>Genre Preferences: Drama genre movies are the most popular, followed by Comedies, Action, and Adventure. Netflix should focus on acquiring and producing content in these genres to appeal to a wider audience base.</li>
+                            <li>Regular Content Updates: Given that a movie is added to the Netflix platform 182 days after its release, Netflix should ensure a consistent and timely addition of new content to keep the platform fresh and engaging for subscribers.</li>
+                            <li>Featured Personalities: Anupam Kher and Rajiv Chilaka are prominent figures in the industry. Netflix should consider collaborations or featuring content involving these personalities to attract viewers who appreciate their work.</li>
+                        </ol>
+                        <p>Overall, Netflix should continue to prioritize acquiring and producing content that aligns with audience preferences, focusing on popular genres, regional content, and timely releases to maintain and grow its subscriber base.</p>
+                    </div>
+                    ''', unsafe_allow_html=True)
+        
+        
+        
+#Aerofit Project
+    # elif project == 'Aerofit: Descriptive stats and probablity':
+    #     st.write('Aerofit')
+    # elif project == 'Walmart: Confidence interval and CLT':
+    #     st.write('Walmart project')
+    # elif project == 'YULU: Hypothesis testing':
+    #     st.write('YULU Project')
     elif project == 'Jamboree education: Linear Regression':
-        st.write('Jamboree Project')
-    elif project == 'LoanTap: Logistic Regression':
-        st.write('LoanTap project')
+        st.write('#### Regret the inconvenience,:worried: the page is still under construction and hence not complete, thank you for visiting.:blush:')
+        st.markdown('''
+                    <div>
+                        <div class='d-flex justify-content-center'>
+                            <p class='h2'>Jamboree education: Linear Regression</p>
+                        </div>
+                        <p class='h4'>Problem Statement</p>
+                        <p class='ms-3'>Jamboree, a renowned educational institute assisting students in gaining admission to top international colleges, seeks to enhance its services by offering a probability estimation tool for graduate admissions to IVY league colleges. This tool aims to provide insights into the factors influencing graduate admissions from an Indian perspective and predict an individual's likelihood of admission based on various interrelated factors. The project entails analyzing key factors affecting graduate admissions, understanding their interrelationships, and developing a predictive model to assess an applicant's chances of admission.</p>
+                    </div>
+''', unsafe_allow_html=True)
+        st.write('## Basic Analysis')
+        st.write('### Observation of data')
+        st.write('Load the data')
+        st.code('df = pd.read_csv(r"D:\DSML class\Data\Jamboree_Admission.csv")')
+        st.dataframe(dfjb.head())
+        st.code('df.shape')
+        dfjb.shape
+        st.code('df.info()')
+        buffer = io.StringIO()
+        dfjb.info(buf=buffer)
+        s = buffer.getvalue()
+        st.text(s)
+        st.write("Uninique values and it's count unique for all columns")
+        st.code('df.nunique()')
+        st.text('''
+                Serial No.           500
+                GRE Score             49
+                TOEFL Score           29
+                University Rating      5
+                SOP                    9
+                LOR                    9
+                CGPA                 184
+                Research               2
+                Chance of Admit       61
+                dtype: int64
+                ''')
+        st.write('### Data Processing')
+        st.write('Duplicate value check')
+        st.code('df[df.duplicated()]')
+        dfjb[dfjb.duplicated()]
+        st.write('Check missing values')
+        st.code('''
+                print('Missing Values:')
+                df.isnull().sum()
+                ''')
+        st.text('''
+                Missing Values:
+
+                Serial No.           0
+                GRE Score            0
+                TOEFL Score          0
+                University Rating    0
+                SOP                  0
+                LOR                  0
+                CGPA                 0
+                Research             0
+                Chance of Admit      0
+                dtype: int64
+                ''')
+        st.write('### Droping the row identifier')
+        st.write("Serial No. is the row identifier and it's being dropped as it will interfere in the model's performance")
+        st.code("df.drop('Serial No.', axis=1, inplace=True)")
+        st.write('## Non graphical and graphical analysis of the variable')
+        st.write('### Nongraphical Analysis')
+        st.write('summary of statistics of numerical columns')
+        st.code('df.describe()')
+        st.dataframe(dfjb.describe())
+        st.write('### Graphical analysis')
+        st.write('Plotting the distribution chart for the numercal varaibles')
+        st.code('''
+                plt.figure(figsize=(15,10))
+                plt.subplots_adjust(hspace=0.5)
+                
+                plt.subplot(3,2,1)
+                sns.histplot(df['GRE Score'], kde=True)
+                
+                plt.subplot(3,2,2)
+                sns.histplot(df['TOEFL Score'], kde=True)
+                
+                plt.subplot(3,2,3)
+                sns.histplot(df['University Rating'], kde=True)
+                
+                plt.subplot(3,2,4)
+                sns.histplot(df['SOP'], kde=True)
+                
+                plt.subplot(3,2,5)
+                sns.histplot(df['CGPA'], kde=True)
+                
+                plt.subplot(3,2,6)
+                sns.histplot(data=df, x='Research', kde=True)
+                
+                plt.show()
+                ''')
+        plt.figure(figsize=(15,10))
+        plt.subplots_adjust(hspace=0.5)
+
+        plt.subplot(3,2,1)
+        sns.histplot(dfjb['GRE Score'], kde=True)
+
+        plt.subplot(3,2,2)
+        sns.histplot(dfjb['TOEFL Score'], kde=True)
+
+        plt.subplot(3,2,3)
+        sns.histplot(dfjb['University Rating'], kde=True)
+
+        plt.subplot(3,2,4)
+        sns.histplot(dfjb['SOP'], kde=True)
+
+        plt.subplot(3,2,5)
+        sns.histplot(dfjb['CGPA'], kde=True)
+
+        plt.subplot(3,2,6)
+        sns.histplot(data=dfjb, x='Research', kde=True)
+
+        plt.show()
+        st.pyplot()
+        
+    # elif project == 'LoanTap: Logistic Regression':
+    #     st.write('LoanTap project')
     
 
