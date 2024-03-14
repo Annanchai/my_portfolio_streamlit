@@ -6,6 +6,14 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from wordcloud import WordCloud
 
+import statsmodels.api as sm
+import statsmodels.stats.api as sms
+from statsmodels.stats.outliers_influence import variance_inflation_factor
+import scipy.stats as sp
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.linear_model import Lasso, Ridge
+from sklearn.model_selection import train_test_split
+
 st.set_page_config(layout='wide')
 
 # Link to bootstrap cdn
@@ -609,6 +617,7 @@ with tab2:
         st.write('### Droping the row identifier')
         st.write("Serial No. is the row identifier and it's being dropped as it will interfere in the model's performance")
         st.code("df.drop('Serial No.', axis=1, inplace=True)")
+        dfjb.drop('Serial No.', axis=1, inplace=True)
         st.write('## Non graphical and graphical analysis of the variable')
         st.write('### Nongraphical Analysis')
         st.write('summary of statistics of numerical columns')
@@ -661,9 +670,207 @@ with tab2:
         plt.subplot(3,2,6)
         sns.histplot(data=dfjb, x='Research', kde=True)
 
-        plt.show()
+        st.pyplot()
+        st.write('### Correlation Analysis of Admission Variables')
+        st.code('''
+                corr_mat = df.corr()
+                plt.figure(figsize=(10,8))
+                sns.heatmap(corr_mat, annot=True, linewidths=0.5, cmap='coolwarm')
+                plt.title('Correlation Matrix')
+                plt.show()
+                ''')
+        corr_mat = dfjb.corr()
+        plt.figure(figsize=(10,8))
+        sns.heatmap(corr_mat, annot=True, linewidths=0.5, cmap='coolwarm')
+        plt.title('Correlation Matrix')
         st.pyplot()
         
+        st.write('### Exploring Interrelations Among Independent Variables')
+        st.write('Removing the Target variable chance of admit')
+        st.code('''
+                df_independent = df.drop('Chance of Admit ', axis=1)
+                independent_corr_mat = df_independent.corr()
+                plt.figure(figsize=(10,8))
+                sns.heatmap(independent_corr_mat, annot=True, cmap='coolwarm')
+                plt.title('Independent variable Correlation Matrix')
+                plt.show()
+                ''')
+        df_independent = dfjb.drop('Chance of Admit ', axis=1)
+        independent_corr_mat = df_independent.corr()
+        plt.figure(figsize=(10,8))
+        sns.heatmap(independent_corr_mat, annot=True, cmap='coolwarm')
+        plt.title('Independent variable Correlation Matrix')
+        st.pyplot()
+        st.write('### Linear Regression using Statsmodel Library')
+        st.write('Defining independent variables(Features) and dependent variable(Target)')
+        st.code('''
+                X = df.drop('Chance of Admit ', axis=1)
+                y = df['Chance of Admit ']
+                ''')
+        st.write('Adding constant to independent variable whci is required for stasmodel')
+        st.code('X = sm.add_constant(X)')
+        st.write('Fit the linear regression model')
+        st.code('model = sm.OLS(y, X).fit()')
+        st.write('Summary of the regression model')
+        st.code('print(model.summary())')
+        X = dfjb.drop('Chance of Admit ', axis=1)
+        y = dfjb['Chance of Admit ']
+        X = sm.add_constant(X)
+        model = sm.OLS(y, X).fit()
+        st.text('''OLS Regression Results                            
+==============================================================================
+Dep. Variable:       Chance of Admit    R-squared:                       0.822
+Model:                            OLS   Adj. R-squared:                  0.819
+Method:                 Least Squares   F-statistic:                     324.4
+Date:                Mon, 19 Feb 2024   Prob (F-statistic):          8.21e-180
+Time:                        21:31:18   Log-Likelihood:                 701.38
+No. Observations:                 500   AIC:                            -1387.
+Df Residuals:                     492   BIC:                            -1353.
+Df Model:                           7                                         
+Covariance Type:            nonrobust                                         
+=====================================================================================
+                        coef    std err          t      P>|t|      [0.025      0.975]
+-------------------------------------------------------------------------------------
+const                -1.2757      0.104    -12.232      0.000      -1.481      -1.071
+GRE Score             0.0019      0.001      3.700      0.000       0.001       0.003
+TOEFL Score           0.0028      0.001      3.184      0.002       0.001       0.004
+University Rating     0.0059      0.004      1.563      0.119      -0.002       0.013
+SOP                   0.0016      0.005      0.348      0.728      -0.007       0.011
+LOR                   0.0169      0.004      4.074      0.000       0.009       0.025
+CGPA                  0.1184      0.010     12.198      0.000       0.099       0.137
+Research              0.0243      0.007      3.680      0.000       0.011       0.037
+==============================================================================
+Omnibus:                      112.770   Durbin-Watson:                   0.796
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):              262.104
+Skew:                          -1.160   Prob(JB):                     1.22e-57
+Kurtosis:                       5.684   Cond. No.                     1.30e+04
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+[2] The condition number is large, 1.3e+04. This might indicate that there are
+strong multicollinearity or other numerical problems.
+                ''')
+        st.markdown('''
+                    <div>
+                        <p class='h4'>Insights</p>
+                        <ol>
+                            <li><p class='h5'>R^2 and Adjusted R^2:</p>
+                                <ul>
+                                    <li>R^2: R-squared is 0.822 indicating 82.2% of the variability of dependent variable, Chance of Admit is explained by the independednt variable in the model.</li>
+                                    <li>Adjusted R^2: Adjusted R-squared is 0.819 which is slightly lesser than the R-squared, indicating that the additional predictors do not significantly contribute to the explanatory poer of the model.</li>
+                               </ul>
+                            </li>
+                            <li><p class='h5'>Coeffcients:</p>
+                                <ul>
+                                    <li>Constant(Intercept): It's -1.2757 which represents the value of the dependent variable when all the independent variables are zero.</li>
+                                    <li>GRE, TOEFL, LOR, CGPA and Research coefficents are all positive and the pValue is greater than 0.05 which shows that these variables are statistically sigificant and are associated with the increase in probablity of admission.</li>
+                                    <li>University rating and SOP coefficients are positive but are not statistically significant as pValue is higher than 0.05 which shows that these variables do not have significant impact on the probablity of admission.</li>
+                               </ul>
+                            </li>
+                        </ol>
+                    </div>
+                    ''', unsafe_allow_html=True)
+        st.write('### Assumptions of Linear Regression')
+        st.write('#### Multicolinearity check by VIF score')
+        st.code('''
+                vif = pd.DataFrame()
+                vif['Features'] = X.columns
+                vif['VIF'] = [variance_inflation_factor(X.values, i) for i in range(X.shape[1])]
+                vif''')
+        vif = pd.DataFrame()
+        vif['Features'] = X.columns
+        vif['VIF'] = [variance_inflation_factor(X.values, i) for i in range(X.shape[1])]
+        st.dataframe(vif)
+        st.code('''
+                vif = vif.drop(0)
+                vif['VIF'] = [variance_inflation_factor(X.values, i) for i in range(1, X.shape[1])]
+                vif
+                ''')
+        vif = vif.drop(0)
+        vif['VIF'] = [variance_inflation_factor(X.values, i) for i in range(1, X.shape[1])]
+        st.dataframe(vif)
+        st.write('#### Mean of residuals')
+        st.code('''
+                residuals = model.resid
+                mean_of_residuals = np.mean(residuals)
+                print('Mean of Residuals:', mean_of_residuals)
+                ''')
+        residuals = model.resid
+        mean_of_residuals = np.mean(residuals)
+        st.text('Mean of Residuals: 4.0534242629064463e-16')
+        st.markdown('''
+                    <div>
+                        <p class='h4'>Insights</p>  
+                        <ul>
+                            <li>The mean of residual is 4.0534242629064463e-16 which means that the residuals is centered around zero which means that the residual errors are evenly distributed above and below the regression line.</li>
+                        </ul>
+                    </div>
+                    ''', unsafe_allow_html=True)
+        st.write('#### Linearity of variables')
+        st.code('''
+                sns.residplot(x=model.fittedvalues, y=residuals, lowess=True, line_kws={'color': 'red', 'lw': 1})
+                plt.xlabel("Fitted values")
+                plt.ylabel("Residuals")
+                plt.title("Residual Plot")
+                plt.show()
+                ''')
+        sns.residplot(x=model.fittedvalues, y=residuals, lowess=True, line_kws={'color': 'red', 'lw': 1})
+        plt.xlabel("Fitted values")
+        plt.ylabel("Residuals")
+        plt.title("Residual Plot")
+        st.pyplot()
+        st.write('#### Test for Homoscedasticity')
+        st.code('''
+                name = ['F statistic', 'p-value']
+                test = sms.het_goldfeldquandt(residuals, X)
+                print('F ststistic:', test[0])
+                print('p-value:', test[1])
+                ''')
+        st.text('''
+                F ststistic: 0.4494044330462436
+                p-value: 0.9999999995739839
+                ''')
+        st.markdown('''
+                    <div>
+                        <p class='h4'>Insights</p>  
+                        <ul>
+                            <li>The p-value is 1 and hence we fail to reject the null hypothesis of Homoscedasticity test which is the varicance of the residuals is constant across oservations.</li>
+                        </ul>
+                    </div>
+                    ''', unsafe_allow_html=True)
+        st.write('#### Normality of Residuals (Q-Q Plot)')
+        st.write('Plotting the histogram of residuals')
+        st.code('''
+                plt.figure(figsize=(10,5))
+                sns.histplot(x=residuals, kde=True)
+                plt.title('Histplot for residuals')
+                plt.show()
+                ''')
+        plt.figure(figsize=(10,5))
+        sns.histplot(x=residuals, kde=True)
+        plt.title('Histplot for residuals')
+        st.pyplot()
+        st.write('Plotting the QQ plot fot the residuals')
+        st.code('''
+                fig, ax = plt.subplots(figsize=(6,4))
+                _, (__, ___, r) = sp.probplot(residuals, plot=ax, fit=True)
+                r**2
+                ''')
+        fig, ax = plt.subplots(figsize=(6,4))
+        _, (__, ___, r) = sp.probplot(residuals, plot=ax, fit=True)
+        r**2
+        st.pyplot()
+        st.markdown('''
+                    <div>
+                        <p class='h4'>Insights</p>  
+                        <ul>
+                            <li>The high R2 score of approximately 0.92 which is close to 1 suggests that the residuals exhibit a high degree of normality supporting the normality assumption of the linear regression model.</li>
+                            <li>The histplot of the residuals also supports the normality of the linear regression model.</li>
+                        </ul>
+                    </div>
+                    ''', unsafe_allow_html=True)
+  
     # elif project == 'LoanTap: Logistic Regression':
     #     st.write('LoanTap project')
     
