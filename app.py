@@ -62,6 +62,7 @@ with tab1:
                         <a class = 'p-2' href=https://www.hackerrank.com/profile/shajeesh>Hackerrank</a>
                         <a class = 'p-2' href=https://github.com/Annanchai>Github</a>
                         <a class='p-2' href=https://www.linkedin.com/in/shajeesh-radhakrishnan>Linkedin</a>
+                        <a class = 'p-2' href=https://public.tableau.com/app/profile/shajeesh.radhakrishnan/vizzes>Tableau</a>
                     </div>
                     <div class='card p-5'>
                         <p class='h4'>About me</p>
