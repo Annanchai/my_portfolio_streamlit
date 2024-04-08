@@ -44,7 +44,7 @@ intro = st.sidebar.selectbox(
     'Learn more about me',
     ('Introduction', 'Experience'), label_visibility='collapsed'
 )
-st.sidebar.markdown('''<p class='fw-bold'>My Projects</p>''', unsafe_allow_html=True)
+st.sidebar.markdown('''<p class='fw-bold'>Business Cases</p>''', unsafe_allow_html=True)
 project = st.sidebar.selectbox(
     'Select an option to view the project',
     ('Netflix: Data Exploration and visualization',  'Jamboree education: Linear Regression', ), label_visibility='collapsed'
@@ -53,7 +53,7 @@ project = st.sidebar.selectbox(
 
 
 #Tabs Section
-tab1, tab2 = st.tabs(['About Me', 'Projects'])
+tab1, tab2 = st.tabs(['About Me', 'Business Cases'])
 
 with tab1:
     if intro == 'Introduction':
@@ -556,7 +556,6 @@ with tab2:
     # elif project == 'YULU: Hypothesis testing':
     #     st.write('YULU Project')
     elif project == 'Jamboree education: Linear Regression':
-        st.write('#### Regret the inconvenience,:worried: the page is still under construction and hence not complete, thank you for visiting.:blush:')
         st.markdown('''
                     <div>
                         <div class='d-flex justify-content-center'>
@@ -871,7 +870,123 @@ strong multicollinearity or other numerical problems.
                         </ul>
                     </div>
                     ''', unsafe_allow_html=True)
-  
+        st.write('### Model Evaluation')
+        st.write('Predicting the target variable')
+        st.code('y_pred = model.predict(X)')  
+        st.write('Model evaluation metrics')
+        st.code('''
+                mae = mean_absolute_error(y, y_pred)
+                rmse = mean_squared_error(y, y_pred, squared=False)
+                r2 = r2_score(y, y_pred)
+
+                n = len(y)
+                d = X.shape[1]
+                
+                adjusted_r2 = 1 - (1-r2)*(n-1)/(n-d-1)
+                
+                print("Mean Absolute Error (MAE):", mae)
+                print("Root Mean Squared Error (RMSE):", rmse)
+                print("R-squared Score:", r2)
+                print("Adjusted R-squared Score:", adjusted_r2)
+                ''')
+        st.text('''
+                Mean Absolute Error (MAE): 0.042572390149733436
+                Root Mean Squared Error (RMSE): 0.05950420877764953
+                R-squared Score: 0.8219007395178417
+                Adjusted R-squared Score: 0.8189989185731222
+                ''')
+        st.markdown('''
+                    <div>
+                        <p class='h4'>Insights</p> 
+                        <p class='h5'>Mean Absolute error:</p> 
+                        <ul>
+                            <li>The mean absolute error is 0.0426 which shows that the model's predictions are off by approximately 0.0426 units from the actaul values</li>
+                        </ul>
+                        <p class='h5'>Root mean squared error:</p> 
+                        <ul>
+                            <li>RMSE is the measure of the spred of the residuals around the resgression line and the average magnitude of the residuals is approximately 0.0595 units.</li>
+                        </ul>
+                        <p class='h5'>R-squared score:</p> 
+                        <ul>
+                            <li>The R2 score is approximately 0.8219 which indicates that approximately 82.19% of the variability in the dependent variable is explained by the independent variable in the model.</li>
+                        </ul>
+                        <p class='h5'>Adjusted R-squared score:</p> 
+                        <ul>
+                            <li>The adjusted R-squared score, which accounts for the number of predictors in the model, is approximately 0.8190. It is slightly lower than the R-squared score but still indicates a good fit of the model.</li>
+                        </ul>
+                    </div>
+                    ''', unsafe_allow_html=True)
+        st.write('### Lasso and Ridge regression using sklearn')
+        st.write('Split the data into train and test sets')
+        st.code('X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)')
+        st.write('#### Lasso Regression')
+        st.code('''
+                lasso_model = Lasso(alpha=0.01)
+                lasso_model.fit(X_train, y_train)
+                lasso_y_pred = lasso_model.predict(X_test)
+                ''')
+        st.write('#### Ridge Regression')
+        st.code('''
+                ridge_model = Ridge(alpha=0.01)
+                ridge_model.fit(X_train, y_train)
+                ridge_y_pred = ridge_model.predict(X_test)
+                ''')
+        st.write('Model evaluation')
+        st.code('''
+                def evaluate_model(yactual, ypred):
+                    mae = mean_absolute_error(y, y_pred)
+                    rmse = mean_squared_error(y, y_pred, squared=False)
+                    r2 = r2_score(y, y_pred)
+                    return mae, rmse, r2
+                ''')
+        st.code('''
+                lasso_metrics = evaluate_model(y_test, lasso_y_pred)
+                ridge_metrics = evaluate_model(y_test, ridge_y_pred)
+                
+                print("Lasso Regression Metrics:")
+                print("Mean Absolute Error (MAE):", lasso_metrics[0])
+                print("Root Mean Squared Error (RMSE):", lasso_metrics[1])
+                print("R-squared Score:", lasso_metrics[2])
+
+                print("Ridge Regression Metrics:")
+                print("Mean Absolute Error (MAE):", ridge_metrics[0])
+                print("Root Mean Squared Error (RMSE):", ridge_metrics[1])
+                print("R-squared Score:", ridge_metrics[2])
+                ''')
+        st.text('''
+                Lasso Regression Metrics:
+                Mean Absolute Error (MAE): 0.042572390149733436
+                Root Mean Squared Error (RMSE): 0.05950420877764953
+                R-squared Score: 0.8219007395178417
+
+                
+                Ridge Regression Metrics:
+                Mean Absolute Error (MAE): 0.042572390149733436
+                Root Mean Squared Error (RMSE): 0.05950420877764953
+                R-squared Score: 0.8219007395178417''')
+        st.markdown('''
+                    <div>
+                        <p class='h4'>Insights</p>  
+                        <ul>
+                            <li>Lasso and Ridge regression models has produced identical results and the metrics suggest thatboth Lasso and Ridge regression models perform similarly with no noticeable improvement over the standard linear regression model.</li>
+                        </ul>
+                    </div>
+                    ''', unsafe_allow_html=True)
+        st.markdown('''
+                    <div>
+                        <p class='h3'>Actionable insights and recommendations</p>  
+                        <p>Based on the analysis conducted on the dataset and the performance of various regression models, here are some actionable insights and recommendations:</p>
+                        <ul>
+                            <li>The features such as GRE Score, TOEFL Score, CGPA, LOR, and Research experience showed significant impact on the chance of admission.</li>
+                            <li>Prioritize and focus on improving features that have a significant positive impact on the chance of admission.</li>
+                            <li>Students aiming for top colleges abroad should aim to improve their performance in these areas.</li>
+                            <li>While the Statement of Purpose (SOP) and Letter of Recommendation (LOR) were included in the model, they did not show significant impact on the chance of admission in the analysis. However, it's important to note that these components are still crucial in the application process and can provide valuable insights into a candidate's character and potential.</li>
+                            <li>Candidates with research experience tend to have a slightly higher chance of admission according to the model. Encouraging students to participate in research opportunities during their undergraduate studies could enhance their profiles.</li>
+                            <li>Providing students with resources and support to improve their profiles for admissions to top colleges abroad. This could include test preparation assistance for exams like GRE and TOEFL, guidance on crafting strong personal statements and recommendation letters, and opportunities for research experience.</li>
+                        </ul>
+                        <p>By implementing these insights and recommendations, Jamboree can further enhance its support for students aiming to secure admission to Ivy League colleges and other top universities abroad.</p>
+                    </div>
+                    ''', unsafe_allow_html=True)
     # elif project == 'LoanTap: Logistic Regression':
     #     st.write('LoanTap project')
     
