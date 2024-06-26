@@ -66,13 +66,13 @@ with tab1:
                     </div>
                     <div class='card p-5'>
                         <p class='h4'>About me</p>
-                        <p class='p-2'>Hello! I'm Shajeesh Radhakrishnan, a passionate data analyst with a background in Biochemistry and a current pursuit of an MSc in Computer Science: Artificial Intelligence and Machine Learning. Born and raised in Coimbatore, Tamilnadu, and originally from Malappuram, Kerala, I bring a unique blend of cultural diversity and analytical skills to my work.</p>
-                        <p class='h4'>Data Science Skills</p>  
+                        <p class='p-2'>Hello! I'm Shajeesh Radhakrishnan, a passionate and aspiring Data Scientist with a background in Biochemistry and a current pursuit of an MSc in Computer Science: Artificial Intelligence and Machine Learning. Born and raised in Coimbatore, Tamilnadu, and originally from Malappuram, Kerala, I bring a unique blend of cultural diversity and analytical skills to my work.</p>
+                        <p class='h4'>Tech Stack</p>  
                         <ul class='p-2'>
-                            <li>Programming Languages: Python</li>
-                            <li>Tools: Tableau, SQL</li>
-                            <li>Libraries: Pandas, Numpy, Seaborn, Matplotlib</li>
-                            <li>Statistics: Probability and Statistics</li>
+                            <li>General Skills: Data Analytics, Data Visualization, Probability and Statistics, Machine learning</li>
+                            <li>Programming Languages: Python, HTML, JavaScript, React, React Native</li>
+                            <li>Tools: Tableau, SQL, Github, Odoo</li>
+                            <li>Libraries: Pandas, Numpy, Seaborn, Matplotlib, SciPy, Scikit-learn</li>
                         </ul> 
                         <p class='h4'>Education</p>
                         <ul class='p-2'>
